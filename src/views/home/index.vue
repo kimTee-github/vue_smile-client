@@ -72,6 +72,7 @@ export default {
       finished: false,
       error: false,
       page: 1,
+      temp: "",
     };
   },
   components: {
@@ -100,17 +101,20 @@ export default {
         // console.log(res.data.data.filter.list);
         this.type = res.data.data.filter.list;
         this.list = res.data.data.list;
+        var temp = this.type[0].sort;
+        console.log(temp);
       });
   },
   methods: {
     onChange(index) {
       this.defaultIndex = index;
+      this.temp = this.type[this.defaultIndex].sort;
       this.list = [];
-      var temp = this.type[this.defaultIndex].sort;
+
       axios
         .get("http://123.207.32.32:8000/api/x6/home/data", {
           params: {
-            type: this.type[this.defaultIndex].sort,
+            type: this.temp,
             page: 1,
           },
         })
@@ -118,57 +122,53 @@ export default {
           this.type = res.data.data.filter.list;
           this.list = res.data.data.list;
         });
+        this.getCategory(); 
+
     },
-    // async
-     getCategory() {
-      // let res = await getCategory({
-      //   page: this.page,
-      //   type: "pop",
-      // });
-      console.log(324324);
-      getCategory({
+    async getCategory() {
+      this.page++
+      let res = await axios.get("http://123.207.32.32:8000/api/x6/home/data", {
         params: {
-          page: this.page,
-          type: "pop",
+          type: 'pop',
+          page: 2,
         },
-      }).then((res) => {
-        console.log(res);
       });
+      console.log(res.data.data.list);
+      console.log(this.page);
 
-      // console.log(res.data.list);
-
-      // if (res.data.list === 0) {
-      //   // 判断获取数据条数若等于0
-      //   this.list = []; // 清空数组
-      //   this.finished = true; // 停止加载
-      // }
-      // // 若数据条数不等于0
-      // this.total = res.data.total; // 给数据条数赋值
-      // this.list.push(...res.data.list); // 将数据放入list中
-      // this.loading = false; // 加载状态结束
-      // // 如果list长度大于等于总数据条数,数据全部加载完成
+      if (res.data.data.list === 0) {
+        // 判断获取数据条数若等于0
+        this.list = []; // 清空数组
+        this.finished = true; // 停止加载
+      }
+      // 若数据条数不等于0
+      this.total = res.data.total; // 给数据条数赋值
+      this.list.push(...res.data.data.list); // 将数据放入list中
+      this.loading = false; // 加载状态结束
+      // 如果list长度大于等于总数据条数,数据全部加载完成
       // console.log(this.list);
-      // if (this.list.length >= res.data.total) {
-      //   this.finished = true; // 结束加载状态
-      // }
+      if (this.list.length >= res.data.data.total) {
+        this.finished = true; // 结束加载状态
+      }
     },
     onLoad() {
       // 若加载条到了底部
       let timer = setTimeout(() => {
         // 定时器仅针对本地数据渲染动画效果,项目中axios请求不需要定时器
         this.getCategory(); // 调用上面方法,请求数据
-        console.log(this.getCategory());
         this.page++; // 分页数加一
+        console.log(this.page);
+        console.log(this.page);
         this.finished && clearTimeout(timer); //清除计时器
-      }, 100);
+      }, 1000);
     },
-    onRefresh() {
-      this.finished = false; // 清空列表数据
-      this.loading = true; // 将 loading 设置为 true，表示处于加载状态
-      this.page = 1; // 分页数赋值为1
-      this.list = []; // 清空数组
-      this.onLoad(); // 重新加载数据
-    },
+    // onRefresh() {
+    //   this.finished = false; // 清空列表数据
+    //   this.loading = true; // 将 loading 设置为 true，表示处于加载状态
+    //   this.page = 1; // 分页数赋值为1
+    //   this.list = []; // 清空数组
+    //   this.onLoad(); // 重新加载数据
+    // },
     to(iid) {
       this.$router.push({
         path: "/details",
